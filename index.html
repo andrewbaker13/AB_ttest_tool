@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student's t-test Tool</title>
+    <title>Welch's t-test Tool</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
@@ -11,8 +11,8 @@
 </head>
 <body>
     <header>
-        <h1>Student's t-test Tool</h1>
-        <p>Compare means of two independent groups using Welch's t-test</p>
+        <h1>Welch's t-test Tool</h1>
+        <p>Compare means of two independent groups with fan charts and narrative insights</p>
     </header>
 
     <main>
@@ -57,7 +57,7 @@
                 </div>
                 <div class="confidence-buttons">
                     <label>Confidence Level:</label>
-                    <div class="button-group">
+                    <div class="button-group" role="group" aria-label="Select confidence level">
                         <button class="conf-level-btn" data-level="0.90">90%</button>
                         <button class="conf-level-btn selected" data-level="0.95">95%</button>
                         <button class="conf-level-btn" data-level="0.99">99%</button>
@@ -66,14 +66,72 @@
             </div>
         </section>
 
+        <section class="axis-settings" aria-label="Chart Axis Settings">
+            <h2>Chart Axis Settings</h2>
+            <div class="axis-card">
+                <h3>Means Fan Chart</h3>
+                <label class="switch-label">
+                    <input type="checkbox" id="means-axis-lock">
+                    <span>Lock axis to custom range</span>
+                </label>
+                <div class="range-inputs">
+                    <div class="input-group inline">
+                        <label for="means-axis-min">Min:</label>
+                        <input type="number" id="means-axis-min" step="any">
+                    </div>
+                    <div class="input-group inline">
+                        <label for="means-axis-max">Max:</label>
+                        <input type="number" id="means-axis-max" step="any">
+                    </div>
+                </div>
+            </div>
+            <div class="axis-card">
+                <h3>Difference Fan Chart</h3>
+                <fieldset>
+                    <legend>Axis Mode</legend>
+                    <label class="radio-label">
+                        <input type="radio" name="diff-axis-mode" value="auto" checked>
+                        <span>Auto scale</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="diff-axis-mode" value="symmetric">
+                        <span>Symmetric ±</span>
+                    </label>
+                    <div class="input-group inline">
+                        <label for="diff-axis-symmetric">Bound:</label>
+                        <input type="number" id="diff-axis-symmetric" step="any">
+                    </div>
+                    <label class="radio-label">
+                        <input type="radio" name="diff-axis-mode" value="custom">
+                        <span>Custom range</span>
+                    </label>
+                    <div class="range-inputs">
+                        <div class="input-group inline">
+                            <label for="diff-axis-min">Min:</label>
+                            <input type="number" id="diff-axis-min" step="any">
+                        </div>
+                        <div class="input-group inline">
+                            <label for="diff-axis-max">Max:</label>
+                            <input type="number" id="diff-axis-max" step="any">
+                        </div>
+                    </div>
+                </fieldset>
+                <button id="reset-axis" type="button" class="secondary">Reset Axis Controls</button>
+            </div>
+        </section>
+
         <section class="results-section">
             <div class="visualization-wrapper">
-                <div id="visualization" class="plot-container"></div>
-                <div class="plot-legend">
-                    <p><strong>Top Plot:</strong> Shows the means and confidence intervals for each group</p>
-                    <p><strong>Bottom Plot:</strong> Shows the difference between groups with confidence interval</p>
-                    <p>🎯 The dashed red line represents the null hypothesis (H₀)</p>
-                </div>
+                <article class="chart-card" aria-labelledby="means-chart-title">
+                    <h2 id="means-chart-title">Means Fan Chart</h2>
+                    <div id="means-chart" class="plot-container" role="img" aria-live="polite" aria-label="Fan chart showing group means and confidence intervals"></div>
+                    <div id="means-narrative" class="chart-narrative" aria-live="polite"></div>
+                </article>
+                <article class="chart-card" aria-labelledby="diff-chart-title">
+                    <h2 id="diff-chart-title">Difference Fan Chart</h2>
+                    <div id="difference-chart" class="plot-container" role="img" aria-live="polite" aria-label="Fan chart showing difference in means and confidence intervals"></div>
+                    <div id="difference-narrative" class="chart-narrative" aria-live="polite"></div>
+                </article>
             </div>
             <div id="interpretation" class="interpretation" aria-live="polite"></div>
         </section>
