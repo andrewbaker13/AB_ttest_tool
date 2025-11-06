@@ -45,6 +45,24 @@ main {
     gap: 2rem;
 }
 
+.equation-section,
+.scenario-section {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.equation-section p,
+.scenario-section p {
+    margin: 0.75rem 0;
+}
+
+.scenario-section span {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
 /* Input section */
 .input-section {
     display: grid;
@@ -269,6 +287,34 @@ button.secondary:hover {
 
 .critical-thinking ul {
     padding-left: 1.5rem;
+}
+
+.summary-section {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.summary-section table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.summary-section th,
+.summary-section td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e4e9f0;
+    text-align: left;
+}
+
+.summary-section th {
+    background: #f1f4f8;
+    color: var(--primary-color);
+}
+
+.summary-section tr:last-child td {
+    border-bottom: none;
 }
 
 footer {
