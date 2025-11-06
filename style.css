@@ -58,6 +58,19 @@ main {
     margin: 0.75rem 0;
 }
 
+.equation-note {
+    margin-top: 1.25rem;
+    background: #f8f9fb;
+    padding: 1.2rem;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--accent-color);
+}
+
+.equation-note h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
 .scenario-section span {
     font-weight: 600;
     color: var(--accent-color);
@@ -275,6 +288,26 @@ button.secondary:hover {
     padding: 1.2rem;
     border-radius: var(--border-radius);
     border-left: 4px solid var(--accent-color);
+}
+
+.reporting-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+
+.report-card {
+    background: #f8f9fb;
+    padding: 1.2rem;
+    border-radius: var(--border-radius);
+    border-left: 4px solid rgba(192, 57, 43, 0.4);
+    box-shadow: inset 0 0 0 1px #e4e9f0;
+}
+
+.report-card h4 {
+    margin-top: 0;
+    color: var(--primary-color);
 }
 
 /* Critical thinking */
