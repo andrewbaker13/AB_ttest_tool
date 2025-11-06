@@ -16,9 +16,31 @@
     </header>
 
     <main>
+        <section class="equation-section">
+            <h2>Key Equations</h2>
+            <p>The Welch's t-test evaluates whether two independent group means differ using the statistic:</p>
+            <p>\[ t = \frac{\bar{x}_1 - \bar{x}_2 - \Delta_0}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}} \]</p>
+            <p>The confidence interval for the difference in means is computed as:</p>
+            <p>\[ (\bar{x}_1 - \bar{x}_2) \pm t_{\alpha/2,\,\nu} \times \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}} \]</p>
+        </section>
+
+        <section class="scenario-section">
+            <h2>Practical Scenario</h2>
+            <p>
+                Imagine comparing the average outcomes for
+                <span id="scenario-group1">Group 1</span> and
+                <span id="scenario-group2">Group 2</span>. Adjust the inputs below to reflect
+                your real-world experiment, and this tool will quantify how different the group means are.
+            </p>
+        </section>
+
         <section class="input-section">
             <div class="group-inputs">
-                <h2>Group 1</h2>
+                <h2 id="group1-heading">Group 1</h2>
+                <div class="input-group">
+                    <label for="group1-name">Group 1 Name:</label>
+                    <input type="text" id="group1-name" value="Group 1" maxlength="40">
+                </div>
                 <div class="input-group">
                     <label for="mean1">Mean (x̄₁):</label>
                     <input type="number" id="mean1" step="any" required>
@@ -34,7 +56,11 @@
             </div>
 
             <div class="group-inputs">
-                <h2>Group 2</h2>
+                <h2 id="group2-heading">Group 2</h2>
+                <div class="input-group">
+                    <label for="group2-name">Group 2 Name:</label>
+                    <input type="text" id="group2-name" value="Group 2" maxlength="40">
+                </div>
                 <div class="input-group">
                     <label for="mean2">Mean (x̄₂):</label>
                     <input type="number" id="mean2" step="any" required>
@@ -64,6 +90,22 @@
                     </div>
                 </div>
             </div>
+        </section>
+
+        <section class="results-section">
+            <div class="visualization-wrapper">
+                <article class="chart-card" aria-labelledby="means-chart-title">
+                    <h2 id="means-chart-title">Means Fan Chart</h2>
+                    <div id="means-chart" class="plot-container" role="img" aria-live="polite" aria-label="Fan chart showing group means and confidence intervals"></div>
+                    <div id="means-narrative" class="chart-narrative" aria-live="polite"></div>
+                </article>
+                <article class="chart-card" aria-labelledby="diff-chart-title">
+                    <h2 id="diff-chart-title">Difference Fan Chart</h2>
+                    <div id="difference-chart" class="plot-container" role="img" aria-live="polite" aria-label="Fan chart showing difference in means and confidence intervals"></div>
+                    <div id="difference-narrative" class="chart-narrative" aria-live="polite"></div>
+                </article>
+            </div>
+            <div id="interpretation" class="interpretation" aria-live="polite"></div>
         </section>
 
         <section class="axis-settings" aria-label="Chart Axis Settings">
@@ -120,22 +162,6 @@
             </div>
         </section>
 
-        <section class="results-section">
-            <div class="visualization-wrapper">
-                <article class="chart-card" aria-labelledby="means-chart-title">
-                    <h2 id="means-chart-title">Means Fan Chart</h2>
-                    <div id="means-chart" class="plot-container" role="img" aria-live="polite" aria-label="Fan chart showing group means and confidence intervals"></div>
-                    <div id="means-narrative" class="chart-narrative" aria-live="polite"></div>
-                </article>
-                <article class="chart-card" aria-labelledby="diff-chart-title">
-                    <h2 id="diff-chart-title">Difference Fan Chart</h2>
-                    <div id="difference-chart" class="plot-container" role="img" aria-live="polite" aria-label="Fan chart showing difference in means and confidence intervals"></div>
-                    <div id="difference-narrative" class="chart-narrative" aria-live="polite"></div>
-                </article>
-            </div>
-            <div id="interpretation" class="interpretation" aria-live="polite"></div>
-        </section>
-
         <section class="critical-thinking">
             <h2>Critical Thinking Questions</h2>
             <ul>
@@ -143,6 +169,21 @@
                 <li>What role do the standard deviations play in determining statistical significance?</li>
                 <li>How would your interpretation change if the sample sizes were much smaller?</li>
             </ul>
+        </section>
+
+        <section class="summary-section" aria-live="polite">
+            <h2>Summary of Estimates</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Measure</th>
+                        <th>Estimate</th>
+                        <th>Standard Error</th>
+                        <th id="summary-ci-header">Confidence Interval</th>
+                    </tr>
+                </thead>
+                <tbody id="summary-table-body"></tbody>
+            </table>
         </section>
     </main>
 

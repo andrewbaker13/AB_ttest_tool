@@ -4,6 +4,39 @@ let modifiedDate = new Date().toLocaleDateString();
 
 let selectedConfidenceLevel = 0.95;
 
+function getGroupNames() {
+    const defaultNames = ['Group 1', 'Group 2'];
+    return ['group1-name', 'group2-name'].map((id, index) => {
+        const input = document.getElementById(id);
+        if (!input) {
+            return defaultNames[index];
+        }
+        const value = input.value.trim();
+        return value || defaultNames[index];
+    });
+}
+
+function applyGroupNames(group1Name, group2Name) {
+    const heading1 = document.getElementById('group1-heading');
+    const heading2 = document.getElementById('group2-heading');
+    const scenario1 = document.getElementById('scenario-group1');
+    const scenario2 = document.getElementById('scenario-group2');
+
+    if (heading1) heading1.textContent = group1Name;
+    if (heading2) heading2.textContent = group2Name;
+    if (scenario1) scenario1.textContent = group1Name;
+    if (scenario2) scenario2.textContent = group2Name;
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function erf(x) {
     const sign = Math.sign(x);
     x = Math.abs(x);
@@ -150,7 +183,10 @@ function clamp(value, min, max) {
 }
 
 function renderMeansFanChart(groups, intervals, axisRange, confidenceLevels) {
-    const yPositions = { 'Group 1': 2, 'Group 2': 1 };
+    const yPositions = new Map();
+    groups.forEach((group, index) => {
+        yPositions.set(group.id, groups.length - index);
+    });
     const topLevel = confidenceLevels[confidenceLevels.length - 1];
     const fanHeights = { 0.5: 0.2, 0.8: 0.27 };
     fanHeights[topLevel] = Math.max(fanHeights[topLevel] || 0, 0.35);
@@ -165,7 +201,7 @@ function renderMeansFanChart(groups, intervals, axisRange, confidenceLevels) {
     const annotations = [];
 
     groups.forEach(group => {
-        const y = yPositions[group.name];
+        const y = yPositions.get(group.id);
         const meanText = `${group.name} mean: ${group.mean.toFixed(2)}`;
         annotations.push({
             x: group.mean,
@@ -178,7 +214,7 @@ function renderMeansFanChart(groups, intervals, axisRange, confidenceLevels) {
         });
 
         confidenceLevels.slice().reverse().forEach(level => {
-            const band = intervals[group.name][level];
+            const band = intervals[group.id][level];
             const height = fanHeights[level] || 0.25;
             shapes.push({
                 type: 'rect',
@@ -218,7 +254,7 @@ function renderMeansFanChart(groups, intervals, axisRange, confidenceLevels) {
 
     const trace = {
         x: groups.map(g => g.mean),
-        y: groups.map(g => yPositions[g.name]),
+        y: groups.map(g => yPositions.get(g.id)),
         mode: 'markers',
         type: 'scatter',
         marker: {
@@ -231,10 +267,8 @@ function renderMeansFanChart(groups, intervals, axisRange, confidenceLevels) {
         hoverinfo: 'text'
     };
 
-    const tickTexts = [1, 2].map(val => {
-        const group = groups.find(g => yPositions[g.name] === val);
-        return group ? `${group.name} (n=${group.n})` : '';
-    });
+    const tickVals = groups.map((_, index) => groups.length - index);
+    const tickTexts = groups.map(group => `${group.name} (n=${group.n})`);
 
     const layout = {
         title: `${groups[0].name} vs ${groups[1].name} means (${confidenceLevels.map(l => Math.round(l * 100)).join('% / ')}%)`,
@@ -250,7 +284,7 @@ function renderMeansFanChart(groups, intervals, axisRange, confidenceLevels) {
         },
         yaxis: {
             range: [0.4, 2.6],
-            tickvals: [1, 2],
+            tickvals: tickVals,
             ticktext: tickTexts,
             showgrid: false
         },
@@ -344,13 +378,16 @@ function renderDifferenceFanChart(diffStats, intervals, axisRange, confidenceLev
         text: [`Difference: ${diffStats.meanDifference.toFixed(3)}`]
     };
 
+    const safeGroup1 = escapeHtml(diffStats.group1Name);
+    const safeGroup2 = escapeHtml(diffStats.group2Name);
+
     const layout = {
-        title: `Difference fan chart (Δ = ${diffStats.label}) with ${confidenceLevels.map(l => Math.round(l * 100)).join('% / ')}% intervals`,
+        title: `Difference fan chart (${safeGroup1} − ${safeGroup2}) with ${confidenceLevels.map(l => Math.round(l * 100)).join('% / ')}% intervals`,
         margin: { l: 60, r: 40, t: 60, b: 60 },
         shapes,
         annotations,
         xaxis: {
-            title: 'Difference in means (Group 1 - Group 2)',
+            title: `Difference in means (${safeGroup1} - ${safeGroup2})`,
             range: axisRange,
             zeroline: true,
             zerolinecolor: '#90a4ae',
@@ -389,12 +426,15 @@ function renderDifferenceFanChart(diffStats, intervals, axisRange, confidenceLev
 function updateMeansNarrative(groups, intervals, selectedLevel) {
     const narrative = document.getElementById('means-narrative');
     const lines = groups.map(group => {
-        const ci = intervals[group.name][selectedLevel];
-        return `<strong>${group.name}</strong> has an observed mean of ${group.mean.toFixed(2)} with a ${Math.round(selectedLevel * 100)}% confidence interval from ${ci.lower.toFixed(2)} to ${ci.upper.toFixed(2)}.`;
+        const ci = intervals[group.id][selectedLevel];
+        const safeName = escapeHtml(group.name);
+        return `<strong>${safeName}</strong> has an observed mean of ${group.mean.toFixed(2)} with a ${Math.round(selectedLevel * 100)}% confidence interval from ${ci.lower.toFixed(2)} to ${ci.upper.toFixed(2)}.`;
     });
 
-    const overlap = intervals[groups[0].name][selectedLevel].upper >= intervals[groups[1].name][selectedLevel].lower &&
-        intervals[groups[1].name][selectedLevel].upper >= intervals[groups[0].name][selectedLevel].lower;
+    const firstId = groups[0].id;
+    const secondId = groups[1].id;
+    const overlap = intervals[firstId][selectedLevel].upper >= intervals[secondId][selectedLevel].lower &&
+        intervals[secondId][selectedLevel].upper >= intervals[firstId][selectedLevel].lower;
 
     const overlapLine = overlap
         ? 'The fan bands overlap, suggesting the mean difference may not be practically distinct at this confidence level.'
@@ -411,8 +451,11 @@ function updateDifferenceNarrative(diffStats, intervals, selectedLevel, delta0, 
         ? `The ${Math.round(selectedLevel * 100)}% confidence interval excludes Δ₀ = ${delta0.toFixed(2)}, aligning with the rejection of the null.`
         : `The ${Math.round(selectedLevel * 100)}% confidence interval includes Δ₀ = ${delta0.toFixed(2)}, consistent with failing to reject the null.`;
 
+    const safeGroup1 = escapeHtml(diffStats.group1Name);
+    const safeGroup2 = escapeHtml(diffStats.group2Name);
+
     narrative.innerHTML = `
-        <p>The observed difference in means is ${diffStats.meanDifference.toFixed(2)} with a ${Math.round(selectedLevel * 100)}% confidence interval from ${ci.lower.toFixed(2)} to ${ci.upper.toFixed(2)}.</p>
+        <p>The observed difference in means between <strong>${safeGroup1}</strong> and <strong>${safeGroup2}</strong> is ${diffStats.meanDifference.toFixed(2)} with a ${Math.round(selectedLevel * 100)}% confidence interval from ${ci.lower.toFixed(2)} to ${ci.upper.toFixed(2)}.</p>
         <p>This interval ${coversNull ? 'includes' : 'excludes'} Δ₀ = ${delta0.toFixed(2)}. ${decision} It corresponds to a standard error of ${diffStats.standardError.toFixed(3)} and a t-statistic of ${diffStats.tStatistic.toFixed(3)}.</p>
     `;
 }
@@ -485,6 +528,56 @@ function updateInterpretation(t, df, pValue, ciLower, ciUpper, delta0, alpha, co
     interpretation.innerHTML = text;
 }
 
+function clearSummaryTable() {
+    const tableBody = document.getElementById('summary-table-body');
+    if (tableBody) {
+        tableBody.innerHTML = '';
+    }
+    const header = document.getElementById('summary-ci-header');
+    if (header) {
+        header.textContent = 'Confidence Interval';
+    }
+}
+
+function updateSummaryTable(groups, groupIntervals, diffStats, diffIntervals, selectedLevel) {
+    const tableBody = document.getElementById('summary-table-body');
+    if (!tableBody) {
+        return;
+    }
+
+    const header = document.getElementById('summary-ci-header');
+    if (header) {
+        header.textContent = `${Math.round(selectedLevel * 100)}% Confidence Interval`;
+    }
+
+    const rows = groups.map(group => {
+        const ci = groupIntervals[group.id][selectedLevel];
+        const safeName = escapeHtml(group.name);
+        return `
+            <tr>
+                <td>${safeName}</td>
+                <td>${group.mean.toFixed(3)}</td>
+                <td>${group.standardError.toFixed(3)}</td>
+                <td>${ci.lower.toFixed(3)} to ${ci.upper.toFixed(3)}</td>
+            </tr>
+        `;
+    });
+
+    const diffCi = diffIntervals[selectedLevel];
+    const diffLabel = `${diffStats.group1Name} − ${diffStats.group2Name}`;
+    const safeDiffLabel = escapeHtml(diffLabel);
+    rows.push(`
+        <tr>
+            <td>${safeDiffLabel}</td>
+            <td>${diffStats.meanDifference.toFixed(3)}</td>
+            <td>${diffStats.standardError.toFixed(3)}</td>
+            <td>${diffCi.lower.toFixed(3)} to ${diffCi.upper.toFixed(3)}</td>
+        </tr>
+    `);
+
+    tableBody.innerHTML = rows.join('');
+}
+
 function getMeansAxisRange(autoRange) {
     const lock = document.getElementById('means-axis-lock');
     const minInput = document.getElementById('means-axis-min');
@@ -545,6 +638,9 @@ function resetAxisControls() {
 }
 
 function updateResults() {
+    const [group1Name, group2Name] = getGroupNames();
+    applyGroupNames(group1Name, group2Name);
+
     const mean1 = parseFloat(document.getElementById('mean1').value);
     const sd1 = parseFloat(document.getElementById('sd1').value);
     const n1 = parseInt(document.getElementById('n1').value, 10);
@@ -562,6 +658,7 @@ function updateResults() {
             Plotly.purge('means-chart');
             Plotly.purge('difference-chart');
         }
+        clearSummaryTable();
         return;
     }
 
@@ -578,8 +675,8 @@ function updateResults() {
     const sortedLevels = [...new Set(levels)].sort((a, b) => a - b);
 
     const groupIntervals = {
-        'Group 1': {},
-        'Group 2': {}
+        group1: {},
+        group2: {}
     };
 
     const se1 = sd1 / Math.sqrt(n1);
@@ -588,11 +685,11 @@ function updateResults() {
     sortedLevels.forEach(level => {
         const levelAlpha = 1 - level;
         const crit = tCriticalApprox(1 - levelAlpha / 2, df);
-        groupIntervals['Group 1'][level] = {
+        groupIntervals.group1[level] = {
             lower: mean1 - crit * se1,
             upper: mean1 + crit * se1
         };
-        groupIntervals['Group 2'][level] = {
+        groupIntervals.group2[level] = {
             lower: mean2 - crit * se2,
             upper: mean2 + crit * se2
         };
@@ -608,9 +705,14 @@ function updateResults() {
         };
     });
 
+    const groups = [
+        { id: 'group1', name: group1Name, mean: mean1, n: n1, standardError: se1 },
+        { id: 'group2', name: group2Name, mean: mean2, n: n2, standardError: se2 }
+    ];
+
     const autoMeansRange = ensureRange(
-        Math.min(...sortedLevels.map(level => Math.min(groupIntervals['Group 1'][level].lower, groupIntervals['Group 2'][level].lower))),
-        Math.max(...sortedLevels.map(level => Math.max(groupIntervals['Group 1'][level].upper, groupIntervals['Group 2'][level].upper))),
+        Math.min(...sortedLevels.map(level => Math.min(...groups.map(group => groupIntervals[group.id][level].lower)))),
+        Math.max(...sortedLevels.map(level => Math.max(...groups.map(group => groupIntervals[group.id][level].upper)))),
         0.5
     );
 
@@ -623,18 +725,14 @@ function updateResults() {
     const meansRange = getMeansAxisRange(autoMeansRange);
     const diffRange = getDifferenceAxisRange(autoDiffRange);
 
-    const groups = [
-        { name: 'Group 1', mean: mean1, n: n1 },
-        { name: 'Group 2', mean: mean2, n: n2 }
-    ];
-
     renderMeansFanChart(groups, groupIntervals, meansRange, sortedLevels);
 
     const diffStats = {
         meanDifference: diffMean,
-        label: `${mean1.toFixed(2)} - ${mean2.toFixed(2)}`,
         standardError: se,
-        tStatistic: t
+        tStatistic: t,
+        group1Name,
+        group2Name
     };
 
     renderDifferenceFanChart(diffStats, diffIntervals, diffRange, sortedLevels, delta0);
@@ -646,15 +744,17 @@ function updateResults() {
     );
     document.getElementById('difference-chart').setAttribute(
         'aria-label',
-        `Fan chart for the difference in means with ${intervalLabel} confidence bands and reference line at delta ${delta0.toFixed(2)}.`
+        `Fan chart for the difference in means between ${group1Name} and ${group2Name} with ${intervalLabel} confidence bands and reference line at delta ${delta0.toFixed(2)}.`
     );
 
     updateMeansNarrative(groups, groupIntervals, sortedLevels[sortedLevels.length - 1]);
     updateDifferenceNarrative(diffStats, diffIntervals, sortedLevels[sortedLevels.length - 1], delta0, pValue, alpha);
     updateInterpretation(t, df, pValue, ciLower, ciUpper, delta0, alpha, cohensD, power);
 
-    document.getElementById('means-chart-title').textContent = `Means Fan Chart (${sortedLevels.map(l => Math.round(l * 100)).join('% / ')}% intervals)`;
-    document.getElementById('diff-chart-title').textContent = `Difference Fan Chart (${sortedLevels.map(l => Math.round(l * 100)).join('% / ')}% intervals)`;
+    updateSummaryTable(groups, groupIntervals, diffStats, diffIntervals, sortedLevels[sortedLevels.length - 1]);
+
+    document.getElementById('means-chart-title').textContent = `${group1Name} vs ${group2Name} Means Fan Chart (${sortedLevels.map(l => Math.round(l * 100)).join('% / ')}% intervals)`;
+    document.getElementById('diff-chart-title').textContent = `Difference Fan Chart (${group1Name} − ${group2Name}; ${sortedLevels.map(l => Math.round(l * 100)).join('% / ')}% intervals)`;
 
     modifiedDate = new Date().toLocaleDateString();
     document.getElementById('modified-date').textContent = modifiedDate;
@@ -701,8 +801,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('modified-date').textContent = modifiedDate;
 
     const inputs = [
-        'mean1', 'sd1', 'n1',
-        'mean2', 'sd2', 'n2',
+        'group1-name', 'mean1', 'sd1', 'n1',
+        'group2-name', 'mean2', 'sd2', 'n2',
         'delta0'
     ];
 
