@@ -141,6 +141,17 @@ function getEffectSizeInterpretation(d) {
     return 'Large effect size';
 }
 
+function formatPValueAPA(p) {
+    if (p < 0.001) {
+        return 'p < .001';
+    }
+    const formatted = p.toFixed(3);
+    if (formatted === '1.000') {
+        return 'p = 1.000';
+    }
+    return `p = ${formatted.replace(/^0/, '')}`;
+}
+
 function calculateWelchTTest(mean1, sd1, n1, mean2, sd2, n2, delta0 = 0) {
     const se1 = (sd1 * sd1) / n1;
     const se2 = (sd2 * sd2) / n2;
@@ -460,7 +471,7 @@ function updateDifferenceNarrative(diffStats, intervals, selectedLevel, delta0, 
     `;
 }
 
-function updateInterpretation(t, df, pValue, ciLower, ciUpper, delta0, alpha, cohensD, power) {
+function updateInterpretation(t, df, pValue, ciLower, ciUpper, delta0, alpha, cohensD, power, mean1, sd1, n1, mean2, sd2, n2, diffMean, group1Name, group2Name) {
     const interpretation = document.getElementById('interpretation');
 
     const roundedT = t.toFixed(3);
@@ -470,9 +481,30 @@ function updateInterpretation(t, df, pValue, ciLower, ciUpper, delta0, alpha, co
     const roundedCiUpper = ciUpper.toFixed(3);
     const roundedD = cohensD.toFixed(3);
     const roundedPower = (power * 100).toFixed(1);
+    const roundedDiffMean = diffMean.toFixed(3);
 
     const levelLabel = Math.round(selectedConfidenceLevel * 100);
     const alphaPercent = (alpha * 100).toFixed(1).replace(/\.0$/, '');
+
+    const safeGroup1 = escapeHtml(group1Name);
+    const safeGroup2 = escapeHtml(group2Name);
+    const mean1Text = mean1.toFixed(2);
+    const mean2Text = mean2.toFixed(2);
+    const sd1Text = sd1.toFixed(2);
+    const sd2Text = sd2.toFixed(2);
+    const deltaText = delta0.toFixed(3);
+    const apaP = formatPValueAPA(pValue);
+    const effectDescriptor = getEffectSizeInterpretation(cohensD).toLowerCase();
+
+    const apaReport = `Welch's t-test comparing ${safeGroup1} (M = ${mean1Text}, SD = ${sd1Text}, n = ${n1}) and ${safeGroup2} (M = ${mean2Text}, SD = ${sd2Text}, n = ${n2}) ${pValue < alpha ? 'yielded a significant difference' : 'did not yield a significant difference'}, t(${roundedDf}) = ${roundedT}, ${apaP}, ${levelLabel}% CI [${roundedCiLower}, ${roundedCiUpper}], Cohen's d = ${roundedD}. The observed mean difference was ${roundedDiffMean}, evaluated against Δ₀ = ${deltaText}.`;
+
+    const diffDirection = diffMean > 0
+        ? `${safeGroup1} exceeded ${safeGroup2}`
+        : diffMean < 0
+            ? `${safeGroup1} trailed ${safeGroup2}`
+            : `${safeGroup1} matched ${safeGroup2}`;
+    const absDiff = Math.abs(diffMean).toFixed(2);
+    const managerialReport = `${diffDirection} by ${absDiff} units on average. The ${levelLabel}% confidence interval from ${roundedCiLower} to ${roundedCiUpper} ${ciLower <= delta0 && ciUpper >= delta0 ? 'still contains' : 'excludes'} the benchmark Δ₀ = ${deltaText}, so the statistical test ${pValue < alpha ? 'rejects' : 'does not reject'} the null hypothesis. This ${effectDescriptor} effect (Cohen's d = ${roundedD}) with ${roundedPower}% power suggests ${pValue < alpha ? 'actionable evidence of a difference' : 'caution before claiming a clear difference'}, especially when weighed against practical considerations.`;
 
     let text = `
         <h3>Statistical Results (${levelLabel}% confidence)</h3>
@@ -522,6 +554,18 @@ function updateInterpretation(t, df, pValue, ciLower, ciUpper, delta0, alpha, co
                     <li>Power quantifies the chance of detecting true differences with the current design.</li>
                 </ul>
             </div>
+        </div>
+
+        <h3>Reporting the Difference</h3>
+        <div class="reporting-layout">
+            <article class="report-card" aria-label="APA style summary of the test results">
+                <h4>APA Style</h4>
+                <p>${apaReport}</p>
+            </article>
+            <article class="report-card" aria-label="Managerial interpretation of the test results">
+                <h4>Managerial Interpretation</h4>
+                <p>${managerialReport}</p>
+            </article>
         </div>
     `;
 
@@ -749,7 +793,26 @@ function updateResults() {
 
     updateMeansNarrative(groups, groupIntervals, sortedLevels[sortedLevels.length - 1]);
     updateDifferenceNarrative(diffStats, diffIntervals, sortedLevels[sortedLevels.length - 1], delta0, pValue, alpha);
-    updateInterpretation(t, df, pValue, ciLower, ciUpper, delta0, alpha, cohensD, power);
+    updateInterpretation(
+        t,
+        df,
+        pValue,
+        ciLower,
+        ciUpper,
+        delta0,
+        alpha,
+        cohensD,
+        power,
+        mean1,
+        sd1,
+        n1,
+        mean2,
+        sd2,
+        n2,
+        diffMean,
+        group1Name,
+        group2Name
+    );
 
     updateSummaryTable(groups, groupIntervals, diffStats, diffIntervals, sortedLevels[sortedLevels.length - 1]);
 

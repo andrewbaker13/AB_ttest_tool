@@ -22,6 +22,22 @@
             <p>\[ t = \frac{\bar{x}_1 - \bar{x}_2 - \Delta_0}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}} \]</p>
             <p>The confidence interval for the difference in means is computed as:</p>
             <p>\[ (\bar{x}_1 - \bar{x}_2) \pm t_{\alpha/2,\,\nu} \times \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}} \]</p>
+            <div class="equation-note">
+                <h3>When does Welch's t behave like a z-test?</h3>
+                <p>
+                    As the degrees of freedom grow large—typically when both sample sizes exceed 30 and neither variance is
+                    extremely dominant—the t distribution rapidly approaches the standard normal distribution. In those
+                    situations, the Welch statistic mirrors a z-test because the additional uncertainty from estimating the
+                    variances becomes negligible. When sample sizes are smaller or highly imbalanced, the heavier tails of the t
+                    distribution remain critical for keeping the Type I error rate in check.
+                </p>
+                <p>
+                    For a deeper discussion of the transition from t to z under large-sample conditions, see the
+                    <a href="https://en.wikipedia.org/wiki/Welch%27s_t-test#Relation_to_normal_distribution" target="_blank" rel="noopener noreferrer">
+                        Welch's t-test article on Wikipedia
+                    </a>.
+                </p>
+            </div>
         </section>
 
         <section class="scenario-section">
@@ -105,85 +121,86 @@
                     <div id="difference-narrative" class="chart-narrative" aria-live="polite"></div>
                 </article>
             </div>
-            <div id="interpretation" class="interpretation" aria-live="polite"></div>
-        </section>
 
-        <section class="axis-settings" aria-label="Chart Axis Settings">
-            <h2>Chart Axis Settings</h2>
-            <div class="axis-card">
-                <h3>Means Fan Chart</h3>
-                <label class="switch-label">
-                    <input type="checkbox" id="means-axis-lock">
-                    <span>Lock axis to custom range</span>
-                </label>
-                <div class="range-inputs">
-                    <div class="input-group inline">
-                        <label for="means-axis-min">Min:</label>
-                        <input type="number" id="means-axis-min" step="any">
-                    </div>
-                    <div class="input-group inline">
-                        <label for="means-axis-max">Max:</label>
-                        <input type="number" id="means-axis-max" step="any">
-                    </div>
-                </div>
-            </div>
-            <div class="axis-card">
-                <h3>Difference Fan Chart</h3>
-                <fieldset>
-                    <legend>Axis Mode</legend>
-                    <label class="radio-label">
-                        <input type="radio" name="diff-axis-mode" value="auto" checked>
-                        <span>Auto scale</span>
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="diff-axis-mode" value="symmetric">
-                        <span>Symmetric ±</span>
-                    </label>
-                    <div class="input-group inline">
-                        <label for="diff-axis-symmetric">Bound:</label>
-                        <input type="number" id="diff-axis-symmetric" step="any">
-                    </div>
-                    <label class="radio-label">
-                        <input type="radio" name="diff-axis-mode" value="custom">
-                        <span>Custom range</span>
+            <section class="axis-settings" aria-label="Chart Axis Settings">
+                <h2>Chart Axis Settings</h2>
+                <div class="axis-card">
+                    <h3>Means Fan Chart</h3>
+                    <label class="switch-label">
+                        <input type="checkbox" id="means-axis-lock">
+                        <span>Lock axis to custom range</span>
                     </label>
                     <div class="range-inputs">
                         <div class="input-group inline">
-                            <label for="diff-axis-min">Min:</label>
-                            <input type="number" id="diff-axis-min" step="any">
+                            <label for="means-axis-min">Min:</label>
+                            <input type="number" id="means-axis-min" step="any">
                         </div>
                         <div class="input-group inline">
-                            <label for="diff-axis-max">Max:</label>
-                            <input type="number" id="diff-axis-max" step="any">
+                            <label for="means-axis-max">Max:</label>
+                            <input type="number" id="means-axis-max" step="any">
                         </div>
                     </div>
-                </fieldset>
-                <button id="reset-axis" type="button" class="secondary">Reset Axis Controls</button>
-            </div>
+                </div>
+                <div class="axis-card">
+                    <h3>Difference Fan Chart</h3>
+                    <fieldset>
+                        <legend>Axis Mode</legend>
+                        <label class="radio-label">
+                            <input type="radio" name="diff-axis-mode" value="auto" checked>
+                            <span>Auto scale</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="diff-axis-mode" value="symmetric">
+                            <span>Symmetric ±</span>
+                        </label>
+                        <div class="input-group inline">
+                            <label for="diff-axis-symmetric">Bound:</label>
+                            <input type="number" id="diff-axis-symmetric" step="any">
+                        </div>
+                        <label class="radio-label">
+                            <input type="radio" name="diff-axis-mode" value="custom">
+                            <span>Custom range</span>
+                        </label>
+                        <div class="range-inputs">
+                            <div class="input-group inline">
+                                <label for="diff-axis-min">Min:</label>
+                                <input type="number" id="diff-axis-min" step="any">
+                            </div>
+                            <div class="input-group inline">
+                                <label for="diff-axis-max">Max:</label>
+                                <input type="number" id="diff-axis-max" step="any">
+                            </div>
+                        </div>
+                    </fieldset>
+                    <button id="reset-axis" type="button" class="secondary">Reset Axis Controls</button>
+                </div>
+            </section>
+
+            <div id="interpretation" class="interpretation" aria-live="polite"></div>
+
+            <section class="summary-section" aria-live="polite">
+                <h2>Summary of Estimates</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Measure</th>
+                            <th>Estimate</th>
+                            <th>Standard Error</th>
+                            <th id="summary-ci-header">Confidence Interval</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summary-table-body"></tbody>
+                </table>
+            </section>
         </section>
 
         <section class="critical-thinking">
             <h2>Critical Thinking Questions</h2>
             <ul>
-                <li>How does the difference in sample sizes affect the width of the confidence intervals?</li>
-                <li>What role do the standard deviations play in determining statistical significance?</li>
-                <li>How would your interpretation change if the sample sizes were much smaller?</li>
+                <li>Under what conditions would you prioritize practical significance over statistical significance in deciding next steps?</li>
+                <li>How might unequal variances influence strategic recommendations even when the null hypothesis is not rejected?</li>
+                <li>What additional data would you gather to validate these findings before committing resources to a new initiative?</li>
             </ul>
-        </section>
-
-        <section class="summary-section" aria-live="polite">
-            <h2>Summary of Estimates</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Measure</th>
-                        <th>Estimate</th>
-                        <th>Standard Error</th>
-                        <th id="summary-ci-header">Confidence Interval</th>
-                    </tr>
-                </thead>
-                <tbody id="summary-table-body"></tbody>
-            </table>
         </section>
     </main>
 
