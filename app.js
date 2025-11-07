@@ -203,10 +203,10 @@ function renderMeansFanChart(groups, intervals, axisRange, confidenceLevels) {
     fanHeights[topLevel] = Math.max(fanHeights[topLevel] || 0, 0.35);
 
     const colors = {
-        0.5: 'rgba(192, 57, 43, 0.32)',
-        0.8: 'rgba(192, 57, 43, 0.2)'
+        0.5: 'rgba(66, 165, 245, 0.32)',
+        0.8: 'rgba(33, 150, 243, 0.2)'
     };
-    colors[topLevel] = 'rgba(192, 57, 43, 0.12)';
+    colors[topLevel] = 'rgba(25, 118, 210, 0.14)';
 
     const shapes = [];
     const annotations = [];
@@ -235,7 +235,7 @@ function renderMeansFanChart(groups, intervals, axisRange, confidenceLevels) {
                 x1: band.upper,
                 y0: y - height,
                 y1: y + height,
-                fillcolor: colors[level] || 'rgba(192,57,43,0.15)',
+                fillcolor: colors[level] || 'rgba(33,150,243,0.16)',
                 line: { width: 0 },
                 layer: 'below'
             });
@@ -269,7 +269,7 @@ function renderMeansFanChart(groups, intervals, axisRange, confidenceLevels) {
         mode: 'markers',
         type: 'scatter',
         marker: {
-            color: 'rgba(192, 57, 43, 0.85)',
+            color: 'rgba(30, 136, 229, 0.85)',
             size: 16,
             symbol: 'circle',
             line: { color: '#fff', width: 2 }
@@ -315,10 +315,10 @@ function renderDifferenceFanChart(diffStats, intervals, axisRange, confidenceLev
     fanHeights[topLevel] = Math.max(fanHeights[topLevel] || 0, 0.3);
 
     const colors = {
-        0.5: 'rgba(231, 76, 60, 0.32)',
-        0.8: 'rgba(231, 76, 60, 0.2)'
+        0.5: 'rgba(79, 195, 247, 0.32)',
+        0.8: 'rgba(41, 182, 246, 0.22)'
     };
-    colors[topLevel] = 'rgba(231, 76, 60, 0.12)';
+    colors[topLevel] = 'rgba(3, 155, 229, 0.14)';
 
     const shapes = [];
     const annotations = [];
@@ -334,7 +334,7 @@ function renderDifferenceFanChart(diffStats, intervals, axisRange, confidenceLev
             x1: band.upper,
             y0: y - height,
             y1: y + height,
-            fillcolor: colors[level] || 'rgba(231,76,60,0.18)',
+            fillcolor: colors[level] || 'rgba(3,155,229,0.18)',
             line: { width: 0 },
             layer: 'below'
         });
@@ -380,7 +380,7 @@ function renderDifferenceFanChart(diffStats, intervals, axisRange, confidenceLev
         mode: 'markers',
         type: 'scatter',
         marker: {
-            color: 'rgba(192, 57, 43, 0.85)',
+            color: 'rgba(2, 119, 189, 0.88)',
             size: 18,
             symbol: 'circle',
             line: { color: '#fff', width: 2 }
@@ -577,9 +577,13 @@ function clearSummaryTable() {
     if (tableBody) {
         tableBody.innerHTML = '';
     }
-    const header = document.getElementById('summary-ci-header');
-    if (header) {
-        header.textContent = 'Confidence Interval';
+    const lowerHeader = document.getElementById('summary-ci-lower-header');
+    const upperHeader = document.getElementById('summary-ci-upper-header');
+    if (lowerHeader) {
+        lowerHeader.textContent = 'Lower Bound';
+    }
+    if (upperHeader) {
+        upperHeader.textContent = 'Upper Bound';
     }
 }
 
@@ -589,9 +593,14 @@ function updateSummaryTable(groups, groupIntervals, diffStats, diffIntervals, se
         return;
     }
 
-    const header = document.getElementById('summary-ci-header');
-    if (header) {
-        header.textContent = `${Math.round(selectedLevel * 100)}% Confidence Interval`;
+    const lowerHeader = document.getElementById('summary-ci-lower-header');
+    const upperHeader = document.getElementById('summary-ci-upper-header');
+    const levelText = `${Math.round(selectedLevel * 100)}%`;
+    if (lowerHeader) {
+        lowerHeader.textContent = `${levelText} Lower Bound`;
+    }
+    if (upperHeader) {
+        upperHeader.textContent = `${levelText} Upper Bound`;
     }
 
     const rows = groups.map(group => {
@@ -602,7 +611,8 @@ function updateSummaryTable(groups, groupIntervals, diffStats, diffIntervals, se
                 <td>${safeName}</td>
                 <td>${group.mean.toFixed(3)}</td>
                 <td>${group.standardError.toFixed(3)}</td>
-                <td>${ci.lower.toFixed(3)} to ${ci.upper.toFixed(3)}</td>
+                <td>${ci.lower.toFixed(3)}</td>
+                <td>${ci.upper.toFixed(3)}</td>
             </tr>
         `;
     });
@@ -615,7 +625,8 @@ function updateSummaryTable(groups, groupIntervals, diffStats, diffIntervals, se
             <td>${safeDiffLabel}</td>
             <td>${diffStats.meanDifference.toFixed(3)}</td>
             <td>${diffStats.standardError.toFixed(3)}</td>
-            <td>${diffCi.lower.toFixed(3)} to ${diffCi.upper.toFixed(3)}</td>
+            <td>${diffCi.lower.toFixed(3)}</td>
+            <td>${diffCi.upper.toFixed(3)}</td>
         </tr>
     `);
 

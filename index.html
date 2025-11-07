@@ -43,10 +43,16 @@
         <section class="scenario-section">
             <h2>Practical Scenario</h2>
             <p>
-                Imagine comparing the average outcomes for
-                <span id="scenario-group1">Group 1</span> and
-                <span id="scenario-group2">Group 2</span>. Adjust the inputs below to reflect
-                your real-world experiment, and this tool will quantify how different the group means are.
+                You're leading a marketing analytics project for an e-commerce brand that is A/B testing email campaigns.
+                <span id="scenario-group1">Group 1</span> might represent subscribers who received an optimized subject line,
+                while <span id="scenario-group2">Group 2</span> saw the current control subject line. After the campaign, you
+                collected key performance indicators such as click-through rate, average order value, or downstream revenue
+                per recipient.
+            </p>
+            <p>
+                Use the tool below to plug in the sample statistics for each variant, evaluate whether the observed lift is
+                meaningful, and decide if the new creative warrants a broader rollout. Adjust the hypothesized difference to
+                model the minimum effect size that would justify marketing spend.
             </p>
         </section>
 
@@ -186,7 +192,8 @@
                             <th>Measure</th>
                             <th>Estimate</th>
                             <th>Standard Error</th>
-                            <th id="summary-ci-header">Confidence Interval</th>
+                            <th id="summary-ci-lower-header">Lower Bound</th>
+                            <th id="summary-ci-upper-header">Upper Bound</th>
                         </tr>
                     </thead>
                     <tbody id="summary-table-body"></tbody>
@@ -197,9 +204,10 @@
         <section class="critical-thinking">
             <h2>Critical Thinking Questions</h2>
             <ul>
-                <li>Under what conditions would you prioritize practical significance over statistical significance in deciding next steps?</li>
-                <li>How might unequal variances influence strategic recommendations even when the null hypothesis is not rejected?</li>
-                <li>What additional data would you gather to validate these findings before committing resources to a new initiative?</li>
+                <li>How would you translate the observed mean difference into projected incremental revenue for the next campaign flight?</li>
+                <li>If senior leadership requires a specific lift threshold before rolling out a change, how do the confidence bands inform that go/no-go decision?</li>
+                <li>What customer segments or contextual factors (seasonality, acquisition channel, device mix) could be driving the variance you observe?</li>
+                <li>Which follow-up experiment or data source would help you confirm whether the creative change generalizes to the broader marketing program?</li>
             </ul>
         </section>
     </main>
